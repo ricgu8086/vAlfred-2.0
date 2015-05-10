@@ -24,8 +24,19 @@ def sendUserAndConsole(cad):
 
 
 #Constantes
-comando_mensaje = "msg Amo_Ricardo "
-comando_foto = "send_photo Amo_Ricardo /home/pi/imagenes_picam/picam.jpg"
+
+PATH_2_IMG = u"/home/pi/Documents/Proyecto_vAlfred2/imagenes_picam/picam.jpg"
+PATH_2_TELEGRAM = u"/home/pi/Documents/Proyecto_vAlfred2/tg/bin/telegram-cli" 
+PATH_2_TG_PARAM = u"/home/pi/Documents/Proyecto_vAlfred2/tg/tg-server.pub"
+
+SLEEP_COMMAND = "sleepBestiaParda"
+BESTIA_PARDA_ADDRESS = "192.168.1.2"
+PORT = 55412
+
+
+#mensajes y/o comandos
+comando_mensaje = "msg Amo_Ricardo " + PATH_2_IMG
+comando_foto = "send_photo Amo_Ricardo "
 
 cmd_cierre = "Alfred, retirate"
 cmd_apagar = "Alfred, apaga la Bestia Parda"
@@ -44,16 +55,13 @@ resp_ejecutado_foto = ur"Enseguida, señor. Deme unos segundos."
 resp_ayuda = ur"A continuación le mostraré los comandos que tengo disponibles: "
 resp_ip = u"Mi IP pública es %s"
 
-SLEEP_COMMAND = "sleepBestiaParda"
-BESTIA_PARDA_ADDRESS = "192.168.1.2"
-PORT = 55412
 ## Constantes
 
 
 flag_cerrar = False
 msj_recibido = u"";
 
-telegram = pexpect.spawn('/home/pi/tg/telegram -k /home/pi/tg/tg-server.pub')
+telegram = pexpect.spawn(PATH_2_TELEGRAM + ' -k ' + PATH_2_TG_PARAM)
 telegram.expect('0m')
 time.sleep(0.5)
 telegram.sendline(comando_mensaje + resp_saludo)
@@ -93,7 +101,7 @@ while not flag_cerrar:
             sendUserAndConsole(resp_ejecutado_foto)
             
             picture = picam.takePhotoWithDetails(640, 480, 85)
-            picture.save('/home/pi/imagenes_picam/picam.jpg')                   
+            picture.save(PATH_2_IMG)                   
             
             telegram.sendline(comando_foto)
             telegram.expect(['100', pexpect.TIMEOUT], timeout = 1200)
