@@ -35,8 +35,8 @@ PORT = 55412
 
 
 #mensajes y/o comandos
-comando_mensaje = "msg Amo_Ricardo " + PATH_2_IMG
-comando_foto = "send_photo Amo_Ricardo "
+comando_mensaje = "msg Amo_Ricardo "
+comando_foto = "send_photo Amo_Ricardo " + PATH_2_IMG
 
 cmd_cierre = "Alfred, retirate"
 cmd_apagar = "Alfred, apaga la Bestia Parda"
@@ -62,14 +62,12 @@ flag_cerrar = False
 msj_recibido = u"";
 
 telegram = pexpect.spawn(PATH_2_TELEGRAM + ' -k ' + PATH_2_TG_PARAM)
-telegram.expect('0m')
-time.sleep(0.5)
-telegram.sendline(comando_mensaje + resp_saludo)
+sendUserAndConsole(resp_saludo)
 
 #TODO Cuidao que alguien de fuera puede enviar los comandos aunque no tenga permiso. Hay que restringirlo por usuario
 
 while not flag_cerrar:
-    telegram.expect([">>> ", pexpect.TIMEOUT])
+    telegram.expect(["> ", pexpect.TIMEOUT])
     
     telegram.expect(['0m', pexpect.TIMEOUT])
     msj_recibido = telegram.before[0:-2] #el final contiene dos caracteres no imprimibles (basura)
