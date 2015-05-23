@@ -6,30 +6,27 @@ Created on Sat May 23 10:17:34 2015
 """
 
 '''
-This program will take care of launch any code between try-except clauses so we can
-get any error message and log it properly
+This program use the command pattern to take care of launch any code (function) between try-except 
+clauses so we can get any error message and log it properly.
+The module to be launched through this program must implement a 'runnable'-called function
 '''
 
-import subprocess
+
 import logging
 import sys
 import datetime
 
-# Constants
-EXEC_PROCESS = 'adsfasfa' #This is how we invoke our process
+from main import runnable
+
+
 PATH2LOG = './Logs/'
 
 
-#TODO pendiente de testear si funciona la linea subprocess!!!
-
 try:
-    subprocess.call(EXEC_PROCESS)
+    runnable()
 except:
-    message = sys.exc_info()[0]
-    
+    message = sys.exc_info()
     now = datetime.datetime.now()
     filename = '%s-%s-%s.txt' % (now.year, now.month, now.day)
     logging.basicConfig(filename = PATH2LOG + filename, format = '%(asctime)s %(message)s')
     logging.critical(message)
-    
-        
