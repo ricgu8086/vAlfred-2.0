@@ -8,6 +8,7 @@ import picam
 import unicodedata
 import subprocess
 
+
 # Funciones
 '''Convert cad from unicode to ascii'''
 def toAscii(cad):
@@ -17,7 +18,7 @@ def toAscii(cad):
         return cad
         
 ''' This function send cad to the user and also prints it in the console for debug purpose'''
-def sendUserAndConsole(cad):
+def sendUserAndConsole(telegram, cad):
     telegram.sendline(comando_mensaje + cad)
     print toAscii(cad)
 ## Funciones
@@ -63,7 +64,7 @@ def runnable():
     msj_recibido = u"";
     
     telegram = pexpect.spawn(PATH_2_TELEGRAM + ' -k ' + PATH_2_TG_PARAM)
-    sendUserAndConsole(resp_saludo)
+    sendUserAndConsole(telegram, resp_saludo)
     
     #TODO Cuidao que alguien de fuera puede enviar los comandos aunque no tenga permiso. Hay que restringirlo por usuario
     
@@ -84,20 +85,20 @@ def runnable():
                     resp_error =  'No se ha podido crear el socket. Error' + msg[0] + ' ' + msg[1]
         
                 if s is None:
-                    sendUserAndConsole(resp_error)
+                    sendUserAndConsole(telegram, resp_error)
                 else:
                     s.sendto(SLEEP_COMMAND, (BESTIA_PARDA_ADDRESS, PORT))
                     s.close()
-                    sendUserAndConsole(resp_ejecutado_apagar)
+                    sendUserAndConsole(telegram, resp_ejecutado_apagar)
                     time.sleep(0.5)
     			
             elif msj_recibido == toAscii(cmd_encender).lower():
                 system("wakeonlan E0:CB:4E:83:91:AB")
-                sendUserAndConsole(resp_ejecutado_encender)
+                sendUserAndConsole(telegram, resp_ejecutado_encender)
                 time.sleep(0.5)
     
             elif msj_recibido == toAscii(cmd_foto).lower():
-                sendUserAndConsole(resp_ejecutado_foto)
+                sendUserAndConsole(telegram, resp_ejecutado_foto)
                 
                 picture = picam.takePhotoWithDetails(640, 480, 85)
                 picture.save(PATH_2_IMG)                   
@@ -111,28 +112,28 @@ def runnable():
                 flag_cerrar = True
             
             elif msj_recibido == toAscii(cmd_ayuda).lower():
-                sendUserAndConsole(resp_ayuda)
-                sendUserAndConsole(cmd_cierre)
-                sendUserAndConsole(cmd_apagar)
-                sendUserAndConsole(cmd_encender)
-                sendUserAndConsole(cmd_foto)
-                sendUserAndConsole(cmd_ayuda)
-                sendUserAndConsole(cmd_ip)
+                sendUserAndConsole(telegram, resp_ayuda)
+                sendUserAndConsole(telegram, cmd_cierre)
+                sendUserAndConsole(telegram, cmd_apagar)
+                sendUserAndConsole(telegram, cmd_encender)
+                sendUserAndConsole(telegram, cmd_foto)
+                sendUserAndConsole(telegram, cmd_ayuda)
+                sendUserAndConsole(telegram, cmd_ip)
     
             elif msj_recibido == toAscii(cmd_ip).lower():
-                sendUserAndConsole(resp_ejecutado_foto) #it seems wrong, but is for reutilizing purpose, its ok
+                sendUserAndConsole(telegram, resp_ejecutado_foto) #it seems wrong, but is for reutilizing purpose, its ok
                 public_ip = subprocess.Popen('curl ifconfig.me', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
                 #public_ip = subprocess.Popen(['curl', 'ifconfig.me'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
-                sendUserAndConsole(resp_ip % public_ip)
+                sendUserAndConsole(telegram, resp_ip % public_ip)
                 
             else:
-                sendUserAndConsole(resp_no_soportado1)
-                sendUserAndConsole(msj_recibido)
-                sendUserAndConsole(resp_no_soportado2)
+                sendUserAndConsole(telegram, resp_no_soportado1)
+                sendUserAndConsole(telegram, msj_recibido)
+                sendUserAndConsole(telegram, resp_no_soportado2)
                 print msj_recibido
                 time.sleep(0.3)
     
-    sendUserAndConsole(resp_despedida)
+    sendUserAndConsole(telegram, resp_despedida)
     telegram.sendline('quit')
 
 
