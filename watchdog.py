@@ -75,7 +75,7 @@ if __name__ == '__main__':
         now = datetime.datetime.now()
         filename = '%s-%s-%s.txt' % (now.year, now.month, now.day)
         logging.basicConfig(filename = PATH2LOG + filename, format = '%(asctime)s %(message)s', level = logging.INFO)
-        logging.info("The watchdog has found the process closed. Now it's turning it on")
+        logging.info("The watchdog has found the process closed. Now it's turning it on\n")
     
         logs = findLogs(PATH2LOGS)
         sendEmail(logs)

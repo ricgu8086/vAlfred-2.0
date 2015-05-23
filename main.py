@@ -69,9 +69,9 @@ def runnable():
     #TODO Cuidao que alguien de fuera puede enviar los comandos aunque no tenga permiso. Hay que restringirlo por usuario
     
     while not flag_cerrar:
-        telegram.expect(["> ", pexpect.TIMEOUT])
+        telegram.expect(["> ", pexpect.TIMEOUT, pexpect.EOF])
         
-        telegram.expect(['0m', pexpect.TIMEOUT])
+        telegram.expect(['0m', pexpect.TIMEOUT, pexpect.EOF])
         msj_recibido = telegram.before[0:-2] #el final contiene dos caracteres no imprimibles (basura)
         msj_recibido = toAscii(msj_recibido).lower()
         
@@ -104,9 +104,9 @@ def runnable():
                 picture.save(PATH_2_IMG)                   
                 
                 telegram.sendline(comando_foto)
-                telegram.expect(['100', pexpect.TIMEOUT], timeout = 1200)
-                telegram.expect(['photo', pexpect.TIMEOUT])
-                telegram.expect(['0m', pexpect.TIMEOUT])
+                telegram.expect(['100', pexpect.TIMEOUT, pexpect.EOF], timeout = 1200)
+                telegram.expect(['photo', pexpect.TIMEOUT, pexpect.EOF])
+                telegram.expect(['0m', pexpect.TIMEOUT, pexpect.EOF])
                 
             elif msj_recibido == toAscii(cmd_cierre).lower():
                 flag_cerrar = True
