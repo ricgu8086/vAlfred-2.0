@@ -25,7 +25,7 @@ import datetime
 # Constants
 PROCESS2MONITOR = 'loggedLaunch.py' #This is the name we will look for
 COMMAND = 'ps -ef | grep python' #This system command will show all processes that uses the python interpreter
-EXEC_PROCESS = 'python loggedLaunch.py  > /dev/null 2>&1' #This is how we re-invoke that process
+EXEC_PROCESS = 'python loggedLaunch.py  > /dev/null 2>&1 &' #This is how we re-invoke that process
 EMAIL = '' #We will send notifications to this address
 PATH2LOGS = './Logs/*.txt'
 PATH2LOG = './Logs/'
@@ -72,6 +72,7 @@ if __name__ == '__main__':
     
     if processIsDown(PROCESS2MONITOR):
         
+        #Configuring logging stuff
         now = datetime.datetime.now()
         filename = '%s-%s-%s.txt' % (now.year, now.month, now.day)
         logging.basicConfig(filename = PATH2LOG + filename, format = '%(asctime)s %(message)s', level = logging.INFO)

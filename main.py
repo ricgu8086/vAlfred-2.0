@@ -117,6 +117,7 @@ def runnable():
                 sendUserAndConsole(telegram, cmd_apagar)
                 sendUserAndConsole(telegram, cmd_encender)
                 sendUserAndConsole(telegram, cmd_foto)
+                sendUserAndConsole(telegram, cmd_ip)
                 sendUserAndConsole(telegram, cmd_ayuda)
                 sendUserAndConsole(telegram, cmd_ip)
     
