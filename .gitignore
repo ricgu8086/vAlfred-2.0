@@ -1,0 +1,20 @@
+# Private information #
+#######################
+
+credentials_MIAS.txt
+
+# Language generated files #
+############################
+
+*.pyc
+
+
+# Logs #
+########
+
+Logs
+
+# Others #
+##########
+
+test*.py
