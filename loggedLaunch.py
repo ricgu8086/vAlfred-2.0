@@ -19,7 +19,7 @@ import datetime
 from main import runnable
 
 
-PATH2LOG = './Logs/'
+PATH2LOG = '/home/pi/Desktop/Alfred/vAlfred/Logs/'
 
 
 try:
@@ -29,6 +29,6 @@ except:
     now = datetime.datetime.now()
     filename = '%s-%s-%s.txt' % (now.year, now.month, now.day)
     logging.basicConfig(filename = PATH2LOG + filename, format = '%(asctime)s %(message)s')
-    logging.critical(message + '\n')
+    logging.critical(message)
     print ("An unexpected error has been found and the program had to be closed.\n"
            "You can finde more information about it in %s" % (PATH2LOG + filename))
