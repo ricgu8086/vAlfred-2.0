@@ -2,26 +2,71 @@
 
 import pexpect
 import time
-from os import system
+import os
 import socket
 import picam
 import unicodedata
 import subprocess
 from sendmail import sendmail
-
+import threading
+import Queue
+import glob
 
 # Functions
-'''Convert cad from unicode to ascii'''
+
 def toAscii(cad):
+    '''
+    Convert cad from Unicode to ASCII    
+    '''
+    
     if isinstance(cad, unicode):
         return unicodedata.normalize('NFKD', cad).encode('ascii','ignore')
     else:
         return cad
         
-''' This function send cad to the user and also prints it in the console for debug purposes'''
+
 def sendUserAndConsole(telegram, cad):
+    ''' 
+    This function send cad to the user and also prints it in the console for debug purposes
+    '''
+
     telegram.sendline(comando_mensaje + cad)
     print toAscii(cad)
+
+def process3rdNotifications(notifQueue, stopNotificationsEvent):
+    '''
+    3rd party programs or other independent modules can use Alfred to send notifications to 
+    its human lord, just by placing a txt file in PATH_2_3RD_NOTIFICATIONS with their
+    correspondent message. This function will be read the directory every 10 minutes.
+    
+    As we can get race conditions if we try to read files that are in use, we will use the 
+    following mechanism: the 3rd party programs need to create an empty file with the same
+    name as the intended but starting with '.' which we will call it the lock. Then it will 
+    create the normal file, and after writing the message and close the file, it will 
+    delete the lock. As file creation is an atomic operation we will use this as a signal to
+    decide whether consume or not a notification.
+    '''
+    
+    while not stopNotificationsEvent.is_set():
+
+        files = glob.glob(PATH_2_3RD_NOTIFICATIONS)
+        
+        normal_files = [(elem.split('.')[0], elem) for elem in files if not elem.startswith('.')]
+        locked_files = [elem[1:].split('.')[0] for elem in files if elem.startswith('.')]
+        
+        ready_files = [elem[1] for elem in normal_files if elem[0] not in locked_files]
+        
+        for elem in ready_files:
+            with open(elem, 'r') as f:
+                cad = f.read()
+                notifQueue.put(cad)
+                
+        [os.remove(elem) for elem in ready_files]
+
+        time.sleep(10*60)
+    
+    
+    
 ## Functions
 
 
@@ -31,6 +76,7 @@ PATH_2_IMG = r"/home/pi/Documents/Proyecto_vAlfred2/imagenes_picam/picam.jpg"
 PATH_2_TELEGRAM = r"/home/pi/Documents/Proyecto_vAlfred2/tg/bin/telegram-cli" 
 PATH_2_TG_PARAM = r"/home/pi/Documents/Proyecto_vAlfred2/tg/tg-server.pub"
 PATH_2_EMAIL_CREDENTIALS = r"/home/pi/Documents/Proyecto_vAlfred2/vAlfred/credentials.txt"
+PATH_2_3RD_NOTIFICATIONS = r"./3rd_notifications/*txt"
 
 SLEEP_COMMAND = "sleepBestiaParda"
 BESTIA_PARDA_ADDRESS = "192.168.1.2"
@@ -63,9 +109,10 @@ resp_ejecutado_encender = ur"La Bestia Parda se está levantando, señor."
 resp_ejecutado_foto = ur"Enseguida, señor. Deme unos segundos."
 resp_ayuda = ur"A continuación le mostraré los comandos que tengo disponibles: "
 resp_ip = u"Mi IP pública es %s"
+resp_notificacion = u"Amo, una aplicación externa ha solicitado enviarle una notificación. \nLa reproduzco a continuación:\n"
 
 resp_list = [resp_saludo, resp_despedida, resp_no_soportado1, resp_no_soportado2, resp_ejecutado_apagar,
-             resp_ejecutado_encender, resp_ejecutado_foto, resp_ayuda, resp_ip]
+             resp_ejecutado_encender, resp_ejecutado_foto, resp_ayuda, resp_ip, resp_notificacion]
 
 ## Constants
 
@@ -93,9 +140,14 @@ def runnable():
     
     username, domain = credentials['email'].split('@')
     receiver = username + tag + '@' + domain
-                
-    #TODO Cuidao que alguien de fuera puede enviar los comandos aunque no tenga permiso. Hay que restringirlo por usuario
     
+    #Initializing the module for 3rd process notifications
+    notifQueue = Queue.Queue()
+    stopNotificationsEvent = threading.Event()
+    notificationsThread = threading.Thread(target = process3rdNotifications, args = (notifQueue, stopNotificationsEvent))
+    notificationsThread.start()
+                
+    #TODO Check that a 3rd person cannot send commands. Restrict by user.
     
     ''' LOOP '''
     '''------'''
@@ -127,7 +179,7 @@ def runnable():
     			
        
             elif msj_recibido == toAscii(cmd_encender).lower():
-                system("wakeonlan E0:CB:4E:83:91:AB")
+                os.system("wakeonlan E0:CB:4E:83:91:AB")
                 sendUserAndConsole(telegram, resp_ejecutado_encender)
                 time.sleep(0.5)
     
@@ -172,7 +224,7 @@ def runnable():
                 msg = 'Mensaje enviado desde Alfred'  
                 
                 res = sendmail(credentials, receiver, subj, msg)
-                sendUserAndConsole(telegram, 'Resultado = ' + res)
+                sendUserAndConsole(telegram, 'Respuesta del motor de correo = ' + res)
                 
             else:
                 sendUserAndConsole(telegram, resp_no_soportado1)
@@ -180,9 +232,26 @@ def runnable():
                 sendUserAndConsole(telegram, resp_no_soportado2)
                 print msj_recibido
                 time.sleep(0.3)
+                
+            #Let's check if we have any notification to send
+            while True:
+                try:
+                    notif = notifQueue.get_nowait()
+                    sendUserAndConsole(telegram, resp_notificacion)
+                    sendUserAndConsole(telegram, notif)
+                    notifQueue.task_done()
+                except:
+                    return
+                
+                    
+                    
     
+    ''' END '''
+    '''-----'''
     sendUserAndConsole(telegram, resp_despedida)
     telegram.sendline('quit')
+    stopNotificationsEvent.set()  
+    #The main program automatically waits till all non-daemon threads have finished. Don't need join()
 
 
 if __name__ == "__main__":
