@@ -37,33 +37,36 @@ def process3rdNotifications(notifQueue, stopNotificationsEvent):
     '''
     3rd party programs or other independent modules can use Alfred to send notifications to 
     its human lord, just by placing a txt file in PATH_2_3RD_NOTIFICATIONS with their
-    correspondent message. This function will be read the directory every 10 minutes.
+    correspondent message. This function will be read the directory every 5 minutes.
     
     As we can get race conditions if we try to read files that are in use, we will use the 
     following mechanism: the 3rd party programs need to create an empty file with the same
-    name as the intended but starting with '.' which we will call it the lock. Then it will 
+    name as the intended but starting with '#' which we will call it the lock. Then it will 
     create the normal file, and after writing the message and close the file, it will 
     delete the lock. As file creation is an atomic operation we will use this as a signal to
-    decide whether consume or not a notification.
-    '''
+    decide whether consume or not a notification. It's the same procedure LibreOffice uses.
     
+    Using files to communicate process seems not the most elegant way, but it allows the 
+    easiest bash scripts, matlab's, etc to use Alfred. I'm considering in a future doing some
+    experiments with netcat to move on sockets if possible.
+    '''
+        
     while not stopNotificationsEvent.is_set():
 
         files = glob.glob(PATH_2_3RD_NOTIFICATIONS)
         
-        normal_files = [(elem.split('.')[0], elem) for elem in files if not elem.startswith('.')]
-        locked_files = [elem[1:].split('.')[0] for elem in files if elem.startswith('.')]
-        
+        normal_files = [(os.path.basename(elem), elem) for elem in files if not os.path.basename(elem).startswith('#')]
+        locked_files = [os.path.basename(elem)[1:] for elem in files if os.path.basename(elem).startswith('#')]
         ready_files = [elem[1] for elem in normal_files if elem[0] not in locked_files]
         
         for elem in ready_files:
             with open(elem, 'r') as f:
                 cad = f.read()
                 notifQueue.put(cad)
-                
-        [os.remove(elem) for elem in ready_files]
 
-        time.sleep(10*60)
+        [os.remove(elem) for elem in ready_files]
+        
+        time.sleep(5*60)
     
     
     
@@ -76,7 +79,7 @@ PATH_2_IMG = r"/home/pi/Documents/Proyecto_vAlfred2/imagenes_picam/picam.jpg"
 PATH_2_TELEGRAM = r"/home/pi/Documents/Proyecto_vAlfred2/tg/bin/telegram-cli" 
 PATH_2_TG_PARAM = r"/home/pi/Documents/Proyecto_vAlfred2/tg/tg-server.pub"
 PATH_2_EMAIL_CREDENTIALS = r"/home/pi/Documents/Proyecto_vAlfred2/vAlfred/credentials.txt"
-PATH_2_3RD_NOTIFICATIONS = r"./3rd_notifications/*txt"
+PATH_2_3RD_NOTIFICATIONS = r"/home/pi/Documents/Proyecto_vAlfred2/vAlfred/3rd_notifications/*.txt"
 
 SLEEP_COMMAND = "sleepBestiaParda"
 BESTIA_PARDA_ADDRESS = "192.168.1.2"
@@ -103,13 +106,13 @@ cmd_list = [cmd_cierre, cmd_apagar, cmd_encender, cmd_foto, cmd_ayuda, cmd_ip, c
 resp_saludo = ur"Hola, amo Ricardo"
 resp_despedida = ur"Como usted desee, señor."
 resp_no_soportado1 = ur"El comando "
-resp_no_soportado2 = ur" Aún no esta soportado."
+resp_no_soportado2 = ur"Aún no esta soportado."
 resp_ejecutado_apagar = ur"Señor, la orden de apagar se ha ejecutado correctamente."
 resp_ejecutado_encender = ur"La Bestia Parda se está levantando, señor."
 resp_ejecutado_foto = ur"Enseguida, señor. Deme unos segundos."
 resp_ayuda = ur"A continuación le mostraré los comandos que tengo disponibles: "
 resp_ip = u"Mi IP pública es %s"
-resp_notificacion = u"Amo, una aplicación externa ha solicitado enviarle una notificación. \nLa reproduzco a continuación:\n"
+resp_notificacion = u"Amo, una aplicación externa ha solicitado enviarle una notificación. La reproduzco a continuación: "
 
 resp_list = [resp_saludo, resp_despedida, resp_no_soportado1, resp_no_soportado2, resp_ejecutado_apagar,
              resp_ejecutado_encender, resp_ejecutado_foto, resp_ayuda, resp_ip, resp_notificacion]
@@ -224,25 +227,29 @@ def runnable():
                 msg = 'Mensaje enviado desde Alfred'  
                 
                 res = sendmail(credentials, receiver, subj, msg)
-                sendUserAndConsole(telegram, 'Respuesta del motor de correo = ' + res)
+                sendUserAndConsole(telegram, 'Respuesta del motor de correo: ')
+                sendUserAndConsole(telegram, '>>> ' + res)
                 
             else:
                 sendUserAndConsole(telegram, resp_no_soportado1)
                 sendUserAndConsole(telegram, msj_recibido)
                 sendUserAndConsole(telegram, resp_no_soportado2)
-                print msj_recibido
                 time.sleep(0.3)
                 
-            #Let's check if we have any notification to send
-            while True:
-                try:
-                    notif = notifQueue.get_nowait()
-                    sendUserAndConsole(telegram, resp_notificacion)
-                    sendUserAndConsole(telegram, notif)
-                    notifQueue.task_done()
-                except:
-                    return
+        #Let's check if we have any notification to send
+        check = True
+        
+        while check:
+            try:
+                notif = notifQueue.get_nowait()
                 
+                sendUserAndConsole(telegram, resp_notificacion)
+                sendUserAndConsole(telegram, '>>> ' + notif)
+                    
+                notifQueue.task_done()
+            except:
+                check = False
+            
                     
                     
     
