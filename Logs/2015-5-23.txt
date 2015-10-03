@@ -1,0 +1,2 @@
+2015-05-23 13:54:53,523 <type 'exceptions.NameError'>
+2015-05-23 13:55:06,204 (<type 'exceptions.NameError'>, NameError("global name 'a' is not defined",), <traceback object at 0x0679E6E8>)
