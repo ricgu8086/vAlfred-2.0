@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
 
+"""
+
+
+@author: Ricardo Guerrero Gómez-Olmedo
+"""
+
 import pexpect
 import time
 import os
@@ -12,7 +18,63 @@ import threading
 import Queue
 import glob
 
+
+#Constants
+##########
+
+PATH_2_IMG = r"/home/pi/Documents/Proyecto_vAlfred2/imagenes_picam/picam.jpg"
+PATH_2_TELEGRAM = r"/home/pi/Documents/Proyecto_vAlfred2/tg/bin/telegram-cli" 
+PATH_2_TG_PARAM = r"/home/pi/Documents/Proyecto_vAlfred2/tg/tg-server.pub"
+PATH_2_EMAIL_CREDENTIALS = r"/home/pi/Documents/Proyecto_vAlfred2/vAlfred/credentials.txt"
+PATH_2_3RD_NOTIFICATIONS = r"/home/pi/Documents/Proyecto_vAlfred2/vAlfred/3rd_notifications/*.txt"
+
+
+BESTIA_PARDA_ADDRESS = "192.168.1.2"
+PORT = 55412
+
+smtp_server_address = 'smtp.gmail.com:587' #This is not secret, don't need to be in a separated file
+tag = '+vAlfred' #Using this tag allows me to apply specific rules in gmail
+
+PERIOD_CHECK_NOTIF = 5*60
+
+#Messages and/or commands
+cmd_message = "msg Amo_Ricardo "
+cmd_pic = "send_photo Amo_Ricardo " + PATH_2_IMG
+cmd_finish = "quit"
+cmd_on = "wakeonlan E0:CB:4E:83:91:AB"
+cmd_pc_off = "sleepBestiaParda"
+
+usr_cmd_finish = "Alfred, retirate"
+usr_cmd_pc_off = "Alfred, apaga la Bestia Parda"
+usr_cmd_pc_on = "Alfred, enciende la Bestia Parda"
+usr_cmd_pic = "Alfred, muestrame lo que ves"
+usr_cmd_help = "Alfred, ayuda"
+usr_cmd_ip = "Alfred, dime tu ip"
+usr_cmd_test = "Alfred, prueba el nuevo comando"
+
+usr_cmd_list = [usr_cmd_finish, usr_cmd_pc_off, usr_cmd_pc_on, usr_cmd_pic, usr_cmd_help, usr_cmd_ip, usr_cmd_test]
+
+
+usr_resp_welcome = ur"Hola, amo Ricardo"
+usr_resp_bye = ur"Como usted desee, señor."
+usr_resp_unsupported1 = ur"El comando "
+usr_resp_unsupported2 = ur"Aún no esta soportado."
+usr_resp_pc_off = ur"Señor, la orden de apagar se ha ejecutado correctamente."
+usr_resp_pc_on = ur"La Bestia Parda se está levantando, señor."
+usr_resp_pic = ur"Enseguida, señor. Deme unos segundos."
+usr_resp_help = ur"A continuación le mostraré los comandos que tengo disponibles: "
+usr_resp_ip = u"Mi IP pública es %s"
+usr_resp_notif = u"Amo, una aplicación externa ha solicitado enviarle una notificación. La reproduzco a continuación: "
+usr_resp_sock_error =  "No se ha podido crear el socket. Error %s %s"
+                    
+usr_resp_list = [usr_resp_welcome, usr_resp_bye, usr_resp_unsupported1, usr_resp_unsupported2, usr_resp_pc_off,
+             usr_resp_pc_on, usr_resp_pic, usr_resp_help, usr_resp_ip, usr_resp_notif, usr_resp_sock_error]
+
+## Constants
+
+
 # Functions
+###########
 
 def toAscii(cad):
     '''
@@ -30,7 +92,7 @@ def sendUserAndConsole(telegram, cad):
     This function send cad to the user and also prints it in the console for debug purposes
     '''
 
-    telegram.sendline(comando_mensaje + cad)
+    telegram.sendline(cmd_message + cad)
     print toAscii(cad)
 
 def process3rdNotifications(notifQueue, stopNotificationsEvent):
@@ -66,73 +128,26 @@ def process3rdNotifications(notifQueue, stopNotificationsEvent):
 
         [os.remove(elem) for elem in ready_files]
         
-        time.sleep(5*60)
+        time.sleep(PERIOD_CHECK_NOTIF)
     
     
     
 ## Functions
 
-
-#Constants
-
-PATH_2_IMG = r"/home/pi/Documents/Proyecto_vAlfred2/imagenes_picam/picam.jpg"
-PATH_2_TELEGRAM = r"/home/pi/Documents/Proyecto_vAlfred2/tg/bin/telegram-cli" 
-PATH_2_TG_PARAM = r"/home/pi/Documents/Proyecto_vAlfred2/tg/tg-server.pub"
-PATH_2_EMAIL_CREDENTIALS = r"/home/pi/Documents/Proyecto_vAlfred2/vAlfred/credentials.txt"
-PATH_2_3RD_NOTIFICATIONS = r"/home/pi/Documents/Proyecto_vAlfred2/vAlfred/3rd_notifications/*.txt"
-
-SLEEP_COMMAND = "sleepBestiaParda"
-BESTIA_PARDA_ADDRESS = "192.168.1.2"
-PORT = 55412
-
-smtp_server_address = 'smtp.gmail.com:587' #This is not secret, don't need to be in a separated file
-tag = '+vAlfred' #Using this tag allows me to apply specific rules in gmail
-
-#Messages and/or commands
-comando_mensaje = "msg Amo_Ricardo "
-comando_foto = "send_photo Amo_Ricardo " + PATH_2_IMG
-
-cmd_cierre = "Alfred, retirate"
-cmd_apagar = "Alfred, apaga la Bestia Parda"
-cmd_encender = "Alfred, enciende la Bestia Parda"
-cmd_foto = "Alfred, muestrame lo que ves"
-cmd_ayuda = "Alfred, ayuda"
-cmd_ip = "Alfred, dime tu ip"
-cmd_test = "Alfred, prueba el nuevo comando"
-
-cmd_list = [cmd_cierre, cmd_apagar, cmd_encender, cmd_foto, cmd_ayuda, cmd_ip, cmd_test]
-
-
-resp_saludo = ur"Hola, amo Ricardo"
-resp_despedida = ur"Como usted desee, señor."
-resp_no_soportado1 = ur"El comando "
-resp_no_soportado2 = ur"Aún no esta soportado."
-resp_ejecutado_apagar = ur"Señor, la orden de apagar se ha ejecutado correctamente."
-resp_ejecutado_encender = ur"La Bestia Parda se está levantando, señor."
-resp_ejecutado_foto = ur"Enseguida, señor. Deme unos segundos."
-resp_ayuda = ur"A continuación le mostraré los comandos que tengo disponibles: "
-resp_ip = u"Mi IP pública es %s"
-resp_notificacion = u"Amo, una aplicación externa ha solicitado enviarle una notificación. La reproduzco a continuación: "
-
-resp_list = [resp_saludo, resp_despedida, resp_no_soportado1, resp_no_soportado2, resp_ejecutado_apagar,
-             resp_ejecutado_encender, resp_ejecutado_foto, resp_ayuda, resp_ip, resp_notificacion]
-
-## Constants
-
-
                 
                 
+# Main function
                 
 def runnable():
     
     ''' SETUP '''
     '''-------'''
     
-    flag_cerrar = False
-    msj_recibido = u"";
+    flag_close = False
+    rec_message = u"";
     
     telegram = pexpect.spawn(PATH_2_TELEGRAM + ' -k ' + PATH_2_TG_PARAM)
-    sendUserAndConsole(telegram, resp_saludo)
+    sendUserAndConsole(telegram, usr_resp_welcome)
     
     #Reading credentials for email capabilities
     credentials = {'server_address' : smtp_server_address}
@@ -155,85 +170,83 @@ def runnable():
     ''' LOOP '''
     '''------'''
     
-    while not flag_cerrar:
+    while not flag_close:
         telegram.expect(["> ", pexpect.TIMEOUT, pexpect.EOF])
         
         telegram.expect(['0m', pexpect.TIMEOUT, pexpect.EOF])
-        msj_recibido = telegram.before[0:-2] #el final contiene dos caracteres no imprimibles (basura)
-        msj_recibido = toAscii(msj_recibido).lower()
+        rec_message = telegram.before[0:-2] #The last characters are non-printable ones (trash)
+        rec_message = toAscii(rec_message).lower()
         
-        if msj_recibido.startswith("alfred"):
+        if rec_message.startswith("alfred"):
         
-        
-            if msj_recibido == toAscii(cmd_apagar).lower():
+            if rec_message == toAscii(usr_cmd_pc_off).lower():
     	
                 try:
                     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 except socket.error, msg:
-                    resp_error =  'No se ha podido crear el socket. Error' + msg[0] + ' ' + msg[1]
+                    usr_resp_error_aux = usr_resp_sock_error % (msg[0], msg[1])
         
                 if s is None:
-                    sendUserAndConsole(telegram, resp_error)
+                    sendUserAndConsole(telegram, usr_resp_error_aux)
                 else:
-                    s.sendto(SLEEP_COMMAND, (BESTIA_PARDA_ADDRESS, PORT))
+                    s.sendto(cmd_pc_off, (BESTIA_PARDA_ADDRESS, PORT))
                     s.close()
-                    sendUserAndConsole(telegram, resp_ejecutado_apagar)
+                    sendUserAndConsole(telegram, usr_resp_pc_off)
                     time.sleep(0.5)
     			
        
-            elif msj_recibido == toAscii(cmd_encender).lower():
-                os.system("wakeonlan E0:CB:4E:83:91:AB")
-                sendUserAndConsole(telegram, resp_ejecutado_encender)
+            elif rec_message == toAscii(usr_cmd_pc_on).lower():
+                os.system(cmd_on)
+                sendUserAndConsole(telegram, usr_resp_pc_on)
                 time.sleep(0.5)
     
     
-            elif msj_recibido == toAscii(cmd_foto).lower():
-                sendUserAndConsole(telegram, resp_ejecutado_foto)
+            elif rec_message == toAscii(usr_cmd_pic).lower():
+                sendUserAndConsole(telegram, usr_resp_pic)
                 
                 picture = picam.takePhotoWithDetails(640, 480, 85)
                 picture.save(PATH_2_IMG)                   
                 
-                telegram.sendline(comando_foto)
+                telegram.sendline(cmd_pic)
                 telegram.expect(['100', pexpect.TIMEOUT, pexpect.EOF], timeout = 1200)
                 telegram.expect(['photo', pexpect.TIMEOUT, pexpect.EOF])
                 telegram.expect(['0m', pexpect.TIMEOUT, pexpect.EOF])
                 
                 
-            elif msj_recibido == toAscii(cmd_cierre).lower():
-                flag_cerrar = True
+            elif rec_message == toAscii(usr_cmd_finish).lower():
+                flag_close = True
             
             
-            elif msj_recibido == toAscii(cmd_ayuda).lower():
+            elif rec_message == toAscii(usr_cmd_help).lower():
                 
-                sendUserAndConsole(telegram, resp_ayuda)
+                sendUserAndConsole(telegram, usr_resp_help)
                 
-                for command in cmd_list:
+                for command in usr_cmd_list:
                     sendUserAndConsole(telegram, command)
                     
     
-            elif msj_recibido == toAscii(cmd_ip).lower():
-                sendUserAndConsole(telegram, resp_ejecutado_foto) #it seems wrong, but is for reutilization purposes, its ok
+            elif rec_message == toAscii(usr_cmd_ip).lower():
+                sendUserAndConsole(telegram, usr_resp_pic) #it seems wrong, but is for reutilization purposes, its ok
                 public_ip = subprocess.Popen('curl ifconfig.me', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
-                #public_ip = subprocess.Popen(['curl', 'ifconfig.me'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
-                sendUserAndConsole(telegram, resp_ip % public_ip)
+                sendUserAndConsole(telegram, usr_resp_ip % public_ip)
                 
                 
             #This command is just for testing new functionality before being completely integrated 
             #This time the command just send an email
-            elif msj_recibido == toAscii(cmd_test).lower():
-                sendUserAndConsole(telegram, resp_despedida) #it seems wrong, but is for reutilization purposes, its ok
+            elif rec_message == toAscii(usr_cmd_test).lower():
+                sendUserAndConsole(telegram, usr_resp_bye) #it seems wrong, but is for reutilization purposes, its ok
 
-                subj = 'Amo Ricardo, tengo que comunicarle algo'    
+                subject = 'Amo Ricardo, tengo que comunicarle algo'    
                 msg = 'Mensaje enviado desde Alfred'  
                 
-                res = sendmail(credentials, receiver, subj, msg)
+                resp = sendmail(credentials, receiver, subject, msg)
                 sendUserAndConsole(telegram, 'Respuesta del motor de correo: ')
-                sendUserAndConsole(telegram, '>>> ' + res)
+                sendUserAndConsole(telegram, '>>> ' + resp)
                 
             else:
-                sendUserAndConsole(telegram, resp_no_soportado1)
-                sendUserAndConsole(telegram, msj_recibido)
-                sendUserAndConsole(telegram, resp_no_soportado2)
+                sendUserAndConsole(telegram, usr_resp_unsupported1)
+                sendUserAndConsole(telegram, rec_message)
+                sendUserAndConsole(telegram, usr_resp_unsupported2)
                 time.sleep(0.3)
                 
         #Let's check if we have any notification to send
@@ -243,7 +256,7 @@ def runnable():
             try:
                 notif = notifQueue.get_nowait()
                 
-                sendUserAndConsole(telegram, resp_notificacion)
+                sendUserAndConsole(telegram, usr_resp_notif)
                 sendUserAndConsole(telegram, '>>> ' + notif)
                     
                 notifQueue.task_done()
@@ -255,8 +268,8 @@ def runnable():
     
     ''' END '''
     '''-----'''
-    sendUserAndConsole(telegram, resp_despedida)
-    telegram.sendline('quit')
+    sendUserAndConsole(telegram, usr_resp_bye)
+    telegram.sendline(cmd_finish)
     stopNotificationsEvent.set()  
     #The main program automatically waits till all non-daemon threads have finished. Don't need join()
 

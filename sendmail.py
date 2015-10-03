@@ -2,7 +2,7 @@
 """
 Created on Tue May 26 21:04:40 2015
 
-@author: Ricardo
+@author: Ricardo Guerrero Gómez-Olmedo
 """
 
 import smtplib
@@ -25,10 +25,9 @@ def sendmail(credentials, receiver, subject, message):
         server.close()  
         
         return "Email sent successfully\n"
+        
     except:
-        #import sys
         return  "Failed to send the email\n"
-        #sys.exc_info()
             
     
     
