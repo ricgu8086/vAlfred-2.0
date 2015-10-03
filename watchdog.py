@@ -23,6 +23,7 @@ import datetime
 
 
 # Constants
+###########
 PROCESS2MONITOR = 'loggedLaunch.py' #This is the name we will look for
 COMMAND = 'ps -ef | grep python' #This system command will show all processes that uses the python interpreter
 EXEC_PROCESS = 'python loggedLaunch.py  > /dev/null 2>&1 &' #This is how we re-invoke that process
@@ -30,7 +31,10 @@ EMAIL = '' #We will send notifications to this address
 PATH2LOGS = './Logs/*.txt'
 PATH2LOG = './Logs/'
 
+## Constants
+
 # Functions
+###########
         
 def processIsDown(processName):
     
@@ -50,14 +54,13 @@ def findLogs(path):
     '''
     return glob.glob(path)
     
-#TODO testear si se quedan bloqueados los ficheros por la funcion logger
 def cleanFolder(paths):
     print "Removing old logs"
     [os.remove(path) for path in paths]
     
     
 def wakeUpProcess(command):
-    print "Process is UP again (watchdog powered)" #I prefer to put this line after the system call
+    print "Process is UP again (watchdog powered)" #I would prefer to put this line after the system call
                                                    #but it redirects the standard output so..
     os.system(command)
     
@@ -65,8 +68,11 @@ def wakeUpProcess(command):
 #TODO implement
 def sendEmail(logs):
     None
-    
-# Main block
+
+## Functions
+
+
+# Main function
 
 if __name__ == '__main__':
     
@@ -80,9 +86,6 @@ if __name__ == '__main__':
     
         logs = findLogs(PATH2LOGS)
         sendEmail(logs)
-        
-        #if len(logs) != 0:
-            #cleanFolder(logs)
-            
+                    
         wakeUpProcess(EXEC_PROCESS)
      
