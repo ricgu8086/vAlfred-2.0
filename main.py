@@ -66,6 +66,7 @@ usr_resp_help = ur"A continuación le mostraré los comandos que tengo disponibl
 usr_resp_ip = u"Mi IP pública es %s"
 usr_resp_notif = u"Amo, una aplicación externa ha solicitado enviarle una notificación. La reproduzco a continuación: "
 usr_resp_sock_error =  "No se ha podido crear el socket. Error %s %s"
+usr_resp_email_error = "El fichero de credenciales no se ha podido leer correctamente en la ruta: %s . Por favor, revisela" % PATH_2_EMAIL_CREDENTIALS
                     
 usr_resp_list = [usr_resp_welcome, usr_resp_bye, usr_resp_unsupported1, usr_resp_unsupported2, usr_resp_pc_off,
              usr_resp_pc_on, usr_resp_pic, usr_resp_help, usr_resp_ip, usr_resp_notif, usr_resp_sock_error]
@@ -144,7 +145,8 @@ def runnable():
     '''-------'''
     
     flag_close = False
-    rec_message = u"";
+    rec_message = u""
+    email_capabilities = False
     
     telegram = pexpect.spawn(PATH_2_TELEGRAM + ' -k ' + PATH_2_TG_PARAM)
     sendUserAndConsole(telegram, usr_resp_welcome)
@@ -152,12 +154,20 @@ def runnable():
     #Reading credentials for email capabilities
     credentials = {'server_address' : smtp_server_address}
     
-    with open(PATH_2_EMAIL_CREDENTIALS, 'r') as f:
-        credentials['email'] = f.readline()[:-1]  #readline return '\n' character in all but the last line in the file
-        credentials['password'] = f.readline()
-    
-    username, domain = credentials['email'].split('@')
-    receiver = username + tag + '@' + domain
+    try:
+        
+        with open(PATH_2_EMAIL_CREDENTIALS, 'r') as f:
+            credentials['email'] = f.readline()[:-1]  #readline return '\n' character in all but the last line in the file
+            credentials['password'] = f.readline()
+        
+        username, domain = credentials['email'].split('@')
+        receiver = username + tag + '@' + domain
+        email_capabilities = True
+        
+    except:
+        
+        email_capabilities = False
+            
     
     #Initializing the module for 3rd process notifications
     notifQueue = Queue.Queue()
@@ -234,15 +244,19 @@ def runnable():
             #This command is just for testing new functionality before being completely integrated 
             #This time the command just send an email
             elif rec_message == toAscii(usr_cmd_test).lower():
-                sendUserAndConsole(telegram, usr_resp_bye) #it seems wrong, but is for reutilization purposes, its ok
-
-                subject = 'Amo Ricardo, tengo que comunicarle algo'    
-                msg = 'Mensaje enviado desde Alfred'  
                 
-                resp = sendmail(credentials, receiver, subject, msg)
-                sendUserAndConsole(telegram, 'Respuesta del motor de correo: ')
-                sendUserAndConsole(telegram, '>>> ' + resp)
-                
+                if email_capabilities == True:
+                    sendUserAndConsole(telegram, usr_resp_bye) #it seems wrong, but is for reutilization purposes, its ok
+    
+                    subject = 'Amo Ricardo, tengo que comunicarle algo'    
+                    msg = 'Mensaje enviado desde Alfred'  
+                    
+                    resp = sendmail(credentials, receiver, subject, msg)
+                    sendUserAndConsole(telegram, 'Respuesta del motor de correo: ')
+                    sendUserAndConsole(telegram, '>>> ' + resp)
+                else:
+                    sendUserAndConsole(telegram, usr_resp_email_error)
+                    
             else:
                 sendUserAndConsole(telegram, usr_resp_unsupported1)
                 sendUserAndConsole(telegram, rec_message)
