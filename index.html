@@ -1,0 +1,130 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>vAlfred-2.0 by ricgu8086</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-dark.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/main.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+
+      <header>
+        <h1>vAlfred-2.0</h1>
+        <p>My virtual butler. And soon yours!!</p>
+      </header>
+
+      <div id="banner">
+        <span id="logo"></span>
+
+        <a href="https://github.com/ricgu8086/vAlfred-2.0" class="button fork"><strong>View On GitHub</strong></a>
+        <div class="downloads">
+          <span>Downloads:</span>
+          <ul>
+            <li><a href="https://github.com/ricgu8086/vAlfred-2.0/zipball/master" class="button">ZIP</a></li>
+            <li><a href="https://github.com/ricgu8086/vAlfred-2.0/tarball/master" class="button">TAR</a></li>
+          </ul>
+        </div>
+      </div><!-- end banner -->
+
+    <div class="wrapper">
+      <nav>
+        <ul></ul>
+      </nav>
+      <section>
+        <h1>
+<a id="hello-and-welcome-to-valfreds-project" class="anchor" href="#hello-and-welcome-to-valfreds-project" aria-hidden="true"><span class="octicon octicon-link"></span></a>Hello and welcome to vAlfred's project</h1>
+
+<p><img src="https://pbs.twimg.com/profile_images/1810460615/foto_twitter.jpg" alt="dd"></p>
+
+<p><img src="https://googledrive.com/host/0B-f5ycVRULLQMVR4MEFxWjZueGM/vAlfred_project_logo_half.png" alt="vAlfred_logo.png"></p>
+
+<h1>
+<a id="description" class="anchor" href="#description" aria-hidden="true"><span class="octicon octicon-link"></span></a>Description</h1>
+
+<p>This is a virtual butler that will help you making your house more awesome.</p>
+
+<p>How? It lets you to remote turn on your pc (i.e. for resuming your torrent downloads or accessing it through VNC), use your Pi Camera to take a picture to see who is in your house (or if your dog is biting again your USB wires), add notification capabilities for your scripts right to your hand, send emails etc.</p>
+
+<p>vAlfred is a python application that wraps around a Command-line interface for Telegram called <a href="https://github.com/vysheng/tg">Telegram messenger CLI</a>.
+It allows you to interact with your virtual butler just sending messages through Telegram, right from your hand with your cell or using the web version. Everywhere you can access Telegram, Alfred will be there for you.</p>
+
+<p>This application is designed for Linux environments and it suits perfect with the fabulous Raspberry Pi. Furthermore, vAlfred has been developed and tested in a Raspberry Pi model B.</p>
+
+<h1>
+<a id="not-too-remote-future-i-hope" class="anchor" href="#not-too-remote-future-i-hope" aria-hidden="true"><span class="octicon octicon-link"></span></a>Not too remote future (I hope)</h1>
+
+<p>My intention is to add AI capabilities to unleash its potential. I want to add <a href="https://en.wikipedia.org/wiki/Natural_language_processing">NLP</a> (Natural Language Processing) so its interface will become much more simpler: no more strict pre-defined commands but something looser. Also, my intention is to make Alfred into a powerful security system capable to recognize faces using <a href="https://en.wikipedia.org/wiki/OpenCV">OpenCV</a>. This way, each non-recognized face can trigger an alert sending that picture to a remote server (to ensure it's integrity) and to its landlord to evaluate any potential trouble.</p>
+
+<p>What I want to achieve can be reflected in the following situation:
+I'm in the hall of my house ready to leave, the PIR sensor detects movement and the face recognizer engine detects my face. Alfred check my appointments on Google Calendar, the <a href="https://weather.yahoo.com/">Yahoo Weather</a> API and after some seconds I get a Telegram message:</p>
+
+<ul>
+<li>Alfred: My lord, it seems that you are going to have a nice party tonight. I have checked the forecast for this whole night in Madrid and the temperature is going to fall down about 7 degrees at the end of the night. Will be a nice idea to carry a jacket.</li>
+</ul>
+
+<h1>
+<a id="instalation" class="anchor" href="#instalation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Instalation</h1>
+
+<p>First you need to have <a href="https://github.com/vysheng/tg">Telegram messenger CLI</a> running on your system. Currently I'm working with the <a href="https://github.com/vysheng/tg/releases/tag/1.0.5.1">release 1.0.5.1</a> Newer versions were not tested with vAlfred, but will probably work.</p>
+
+<p>After sending some messages using Telegram messenger CLI to test that is properly working, you need to install the dependencies stated in the <em>Dependencies</em> section.</p>
+
+<p>I will provide soon a <code>python setup.py</code> method, but right now the only way you have is download vAlfred's code in a folder, unpack it and manually update the paths in the code to your preferences. I know, I know, this is tedious, but this is not yet a Release Candidate version, it still need some improvements (like this).</p>
+
+<h1>
+<a id="dependencies" class="anchor" href="#dependencies" aria-hidden="true"><span class="octicon octicon-link"></span></a>Dependencies</h1>
+
+<ul>
+<li><a href="https://github.com/ashtons/picam">picam library</a></li>
+<li><a href="http://pexpect.readthedocs.org/en/latest/install.html">pexpect library</a></li>
+<li>wakeonlan tool: <code>sudo apt-get install wakeonlan</code>
+</li>
+</ul>
+
+<h1>
+<a id="screenshots" class="anchor" href="#screenshots" aria-hidden="true"><span class="octicon octicon-link"></span></a>Screenshots</h1>
+
+<p><em>Soon</em></p>
+
+<h1>
+<a id="licence" class="anchor" href="#licence" aria-hidden="true"><span class="octicon octicon-link"></span></a>Licence</h1>
+
+<p>This code is released under <a href="https://tldrlegal.com/license/gnu-lesser-general-public-license-v3-%28lgpl-3%29">LGPL v3 License</a></p>
+
+<p>You can do whatever you want with this code as long as you include my full name (Ricardo Guerrero Gómez-Olmedo), my email (<a href="mailto:ricgu8086@gmail.com">ricgu8086@gmail.com</a>) and a link to this repo (<a href="https://github.com/ricgu8086/vAlfred-2.">https://github.com/ricgu8086/vAlfred-2.</a>0).</p>
+
+<h1>
+<a id="contact" class="anchor" href="#contact" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contact</h1>
+
+<p>If you have any question or you want to contact me, just send me an email to <a href="mailto:ricgu8086@gmail.com">ricgu8086@gmail.com</a> and I will answer you asap.</p>
+
+<p>You can find me on Twitter at <a href="https://twitter.com/ricgu8086">@ricgu8086</a></p>
+
+<h1>
+<a id="legal" class="anchor" href="#legal" aria-hidden="true"><span class="octicon octicon-link"></span></a>Legal</h1>
+
+<p>As the logo of this project is a derivative work of others I want to credit the autorship of the sources to: </p>
+
+<ul>
+<li>Freepik from <a href="www.flaticon.com">www.flaticon.com</a>
+</li>
+<li>Raspberry Pi by stating that “Raspberry Pi is a trademark of the Raspberry Pi Foundation”. I'm not related with Raspberry Pi Foundation, nor this software does.</li>
+</ul>
+      </section>
+      <footer>
+        <p>Project maintained by <a href="https://github.com/ricgu8086">ricgu8086</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
+</html>
