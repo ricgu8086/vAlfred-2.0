@@ -39,7 +39,8 @@ I will provide soon a `python setup.py` method, but right now the only way you h
 
 # Screenshots #
 
-*Soon*
+![screen1_sm.png](https://googledrive.com/host/0B-f5ycVRULLQMVR4MEFxWjZueGM/screen1_sm.png)
+![screen2_sm.png](https://googledrive.com/host/0B-f5ycVRULLQMVR4MEFxWjZueGM/screen2_sm.png)
 
 # Licence #
 
