@@ -5,7 +5,6 @@ Created on Sat May 23 10:09:58 2015
 @author: Ricardo
 """
 
-
 '''
 This code, combined with crontab, will help us to monitor and debug the state of our service
 It will be ran twice a week. If it finds our service down, it will check the log folder to 
@@ -14,12 +13,12 @@ was a crash but it din't produce any log (which will reveal another bug). After 
 turn on the service again
 '''
 
-
-import os
+import datetime
 import glob
 import logging
-import datetime
+import os
 
+CWD = os.path.dirname(os.path.abspath(__file__)) + '/'
 
 
 # Constants
@@ -28,8 +27,8 @@ PROCESS2MONITOR = 'loggedLaunch.py' #This is the name we will look for
 COMMAND = 'ps -ef | grep python' #This system command will show all processes that uses the python interpreter
 EXEC_PROCESS = 'python loggedLaunch.py  > /dev/null 2>&1 &' #This is how we re-invoke that process
 EMAIL = '' #We will send notifications to this address
-PATH2LOGS = './Logs/*.txt'
-PATH2LOG = './Logs/'
+PATH2LOGS = CWD + 'Logs/*.txt'
+PATH2LOG = CWD + 'Logs/'
 
 ## Constants
 

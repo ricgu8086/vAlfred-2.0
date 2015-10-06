@@ -6,27 +6,31 @@
 @author: Ricardo Guerrero Gómez-Olmedo
 """
 
-import pexpect
-import time
-import os
-import socket
-import picam
-import unicodedata
-import subprocess
-from sendmail import sendmail
-import threading
-import Queue
 import glob
+import os
+import pexpect
+import picam
+import Queue
+import socket
+import subprocess
+import time
+import threading
+import unicodedata
 
+from sendmail import sendmail
+
+
+#Current Working Directory
+CWD = os.path.dirname(os.path.abspath(__file__)) + '/'
 
 #Constants
 ##########
 
-PATH_2_IMG = r"/home/pi/Documents/Proyecto_vAlfred2/imagenes_picam/picam.jpg"
+PATH_2_IMG = CWD + "../imagenes_picam/picam.jpg"
+PATH_2_EMAIL_CREDENTIALS = CWD + "credentials.txt"
+PATH_2_3RD_NOTIFICATIONS = CWD + "3rd_notifications/*.txt"
 PATH_2_TELEGRAM = r"/home/pi/Documents/Proyecto_vAlfred2/tg/bin/telegram-cli" 
 PATH_2_TG_PARAM = r"/home/pi/Documents/Proyecto_vAlfred2/tg/tg-server.pub"
-PATH_2_EMAIL_CREDENTIALS = r"/home/pi/Documents/Proyecto_vAlfred2/vAlfred/credentials.txt"
-PATH_2_3RD_NOTIFICATIONS = r"/home/pi/Documents/Proyecto_vAlfred2/vAlfred/3rd_notifications/*.txt"
 
 
 BESTIA_PARDA_ADDRESS = "192.168.1.2"

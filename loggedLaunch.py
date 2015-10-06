@@ -11,15 +11,18 @@ clauses so we can get any error message and log it properly.
 The module to be launched through this program must implement a 'runnable'-called function
 '''
 
-
+import datetime
 import logging
 import sys
-import datetime
+import os
 
 from main import runnable
 
 
-PATH2LOG = '/home/pi/Desktop/Alfred/vAlfred/Logs/'
+#Current Working Directory
+CWD = os.path.dirname(os.path.abspath(__file__)) + '/'
+
+PATH2LOG = CWD + 'Logs/'
 
 
 try:
@@ -32,3 +35,4 @@ except:
     logging.critical(message)
     print ("An unexpected error has been found and the program had to be closed.\n"
            "You can finde more information about it in %s" % (PATH2LOG + filename))
+'''
