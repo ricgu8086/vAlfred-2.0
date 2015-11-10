@@ -20,28 +20,27 @@ import unicodedata
 from sendmail import sendmail
 
 
-#Current Working Directory
+# Current Working Directory
 CWD = os.path.dirname(os.path.abspath(__file__)) + '/'
 
-#Constants
+# Constants
 ##########
 
 PATH_2_IMG = CWD + "../imagenes_picam/picam.jpg"
 PATH_2_EMAIL_CREDENTIALS = CWD + "credentials.txt"
 PATH_2_3RD_NOTIFICATIONS = CWD + "3rd_notifications/*.txt"
-PATH_2_TELEGRAM = r"/home/pi/Documents/Proyecto_vAlfred2/tg/bin/telegram-cli" 
+PATH_2_TELEGRAM = r"/home/pi/Documents/Proyecto_vAlfred2/tg/bin/telegram-cli"
 PATH_2_TG_PARAM = r"/home/pi/Documents/Proyecto_vAlfred2/tg/tg-server.pub"
-
 
 BESTIA_PARDA_ADDRESS = "192.168.1.2"
 PORT = 55412
 
-smtp_server_address = 'smtp.gmail.com:587' #This is not secret, don't need to be in a separated file
-tag = '+vAlfred' #Using this tag allows me to apply specific rules in gmail
+smtp_server_address = 'smtp.gmail.com:587'  # This is not secret, don't need to be in a separated file
+tag = '+vAlfred'  # Using this tag allows me to apply specific rules in gmail
 
-PERIOD_CHECK_NOTIF = 5*60
+PERIOD_CHECK_NOTIF = 5 * 60
 
-#Messages and/or commands
+# Messages and/or commands
 cmd_message = "msg Amo_Ricardo "
 cmd_pic = "send_photo Amo_Ricardo " + PATH_2_IMG
 cmd_finish = "quit"
@@ -58,7 +57,6 @@ usr_cmd_test = "Alfred, prueba el nuevo comando"
 
 usr_cmd_list = [usr_cmd_finish, usr_cmd_pc_off, usr_cmd_pc_on, usr_cmd_pic, usr_cmd_help, usr_cmd_ip, usr_cmd_test]
 
-
 usr_resp_welcome = ur"Hola, amo Ricardo"
 usr_resp_bye = ur"Como usted desee, señor."
 usr_resp_unsupported1 = ur"El comando "
@@ -69,11 +67,12 @@ usr_resp_pic = ur"Enseguida, señor. Deme unos segundos."
 usr_resp_help = ur"A continuación le mostraré los comandos que tengo disponibles: "
 usr_resp_ip = u"Mi IP pública es %s"
 usr_resp_notif = u"Amo, una aplicación externa ha solicitado enviarle una notificación. La reproduzco a continuación: "
-usr_resp_sock_error =  "No se ha podido crear el socket. Error %s %s"
+usr_resp_sock_error = "No se ha podido crear el socket. Error %s %s"
 usr_resp_email_error = "El fichero de credenciales no se ha podido leer correctamente en la ruta: %s . Por favor, revisela" % PATH_2_EMAIL_CREDENTIALS
-                    
+
 usr_resp_list = [usr_resp_welcome, usr_resp_bye, usr_resp_unsupported1, usr_resp_unsupported2, usr_resp_pc_off,
-             usr_resp_pc_on, usr_resp_pic, usr_resp_help, usr_resp_ip, usr_resp_notif, usr_resp_sock_error]
+                 usr_resp_pc_on, usr_resp_pic, usr_resp_help, usr_resp_ip, usr_resp_notif, usr_resp_sock_error]
+
 
 ## Constants
 
@@ -85,12 +84,12 @@ def toAscii(cad):
     '''
     Convert cad from Unicode to ASCII    
     '''
-    
+
     if isinstance(cad, unicode):
-        return unicodedata.normalize('NFKD', cad).encode('ascii','ignore')
+        return unicodedata.normalize('NFKD', cad).encode('ascii', 'ignore')
     else:
         return cad
-        
+
 
 def sendUserAndConsole(telegram, cad):
     ''' 
@@ -99,6 +98,7 @@ def sendUserAndConsole(telegram, cad):
 
     telegram.sendline(cmd_message + cad)
     print toAscii(cad)
+
 
 def process3rdNotifications(notifQueue, stopNotificationsEvent):
     '''
@@ -117,184 +117,216 @@ def process3rdNotifications(notifQueue, stopNotificationsEvent):
     easiest bash scripts, matlab's, etc to use Alfred. I'm considering in a future doing some
     experiments with netcat to move on sockets if possible.
     '''
-        
+
     while not stopNotificationsEvent.is_set():
 
         files = glob.glob(PATH_2_3RD_NOTIFICATIONS)
-        
+
         normal_files = [(os.path.basename(elem), elem) for elem in files if not os.path.basename(elem).startswith('#')]
         locked_files = [os.path.basename(elem)[1:] for elem in files if os.path.basename(elem).startswith('#')]
         ready_files = [elem[1] for elem in normal_files if elem[0] not in locked_files]
-        
+
         for elem in ready_files:
             with open(elem, 'r') as f:
                 cad = f.read()
                 notifQueue.put(cad)
 
         [os.remove(elem) for elem in ready_files]
-        
+
         time.sleep(PERIOD_CHECK_NOTIF)
-    
-    
-    
+
+
 ## Functions
 
-                
-                
-# Main function
-                
+
+# Alfred
+###########
+
+def alfred_unsupported(rec_message, telegram):
+    sendUserAndConsole(telegram, usr_resp_unsupported1)
+    sendUserAndConsole(telegram, rec_message)
+    sendUserAndConsole(telegram, usr_resp_unsupported2)
+    time.sleep(0.3)
+
+
+def alfred_test(credentials, email_capabilities, receiver, telegram):
+    if email_capabilities == True:
+        sendUserAndConsole(telegram, usr_resp_bye)  # it seems wrong, but is for reutilization purposes, its ok
+
+        subject = 'Amo Ricardo, tengo que comunicarle algo'
+        msg = 'Mensaje enviado desde Alfred'
+
+        resp = sendmail(credentials, receiver, subject, msg)
+        sendUserAndConsole(telegram, 'Respuesta del motor de correo: ')
+        sendUserAndConsole(telegram, '>>> ' + resp)
+    else:
+        sendUserAndConsole(telegram, usr_resp_email_error)
+
+
+def alfred_ip(telegram):
+    sendUserAndConsole(telegram, usr_resp_pic)  # it seems wrong, but is for reutilization purposes, its ok
+    public_ip = \
+        subprocess.Popen('curl ifconfig.me', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[
+            0]
+    sendUserAndConsole(telegram, usr_resp_ip % public_ip)
+
+
+def alfred_help(telegram):
+    sendUserAndConsole(telegram, usr_resp_help)
+    for command in usr_cmd_list:
+        sendUserAndConsole(telegram, command)
+
+
+def alfred_pic(telegram):
+    sendUserAndConsole(telegram, usr_resp_pic)
+    picture = picam.takePhotoWithDetails(640, 480, 85)
+    picture.save(PATH_2_IMG)
+    telegram.sendline(cmd_pic)
+    telegram.expect(['100', pexpect.TIMEOUT, pexpect.EOF], timeout=1200)
+    telegram.expect(['photo', pexpect.TIMEOUT, pexpect.EOF])
+    telegram.expect(['0m', pexpect.TIMEOUT, pexpect.EOF])
+
+
+def alfred_pc_on(telegram):
+    os.system(cmd_on)
+    sendUserAndConsole(telegram, usr_resp_pc_on)
+    time.sleep(0.5)
+
+
+def alfred_pc_off(telegram):
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    except socket.error, msg:
+        usr_resp_error_aux = usr_resp_sock_error % (msg[0], msg[1])
+    if s is None:
+        sendUserAndConsole(telegram, usr_resp_error_aux)
+    else:
+        s.sendto(cmd_pc_off, (BESTIA_PARDA_ADDRESS, PORT))
+        s.close()
+        sendUserAndConsole(telegram, usr_resp_pc_off)
+        time.sleep(0.5)
+
+
+## Alfred
+
+# Main thread
+#############
+
 def runnable():
-    
     ''' SETUP '''
     '''-------'''
-    
+
     flag_close = False
     rec_message = u""
     email_capabilities = False
 
-    #Normalizing user available commands
+    # Normalizing user available commands
     for cmd in usr_cmd_list:
         cmd = toAscii(cmd).lower()
-        
-    #Opening the communication channel
+
+    # Opening the communication channel
     telegram = pexpect.spawn(PATH_2_TELEGRAM + ' -k ' + PATH_2_TG_PARAM)
     sendUserAndConsole(telegram, usr_resp_welcome)
-    
-    #Reading credentials for email capabilities
-    credentials = {'server_address' : smtp_server_address}
-    
+
+    # Reading credentials for email capabilities
+    credentials = {'server_address': smtp_server_address}
+
     try:
-        
+
         with open(PATH_2_EMAIL_CREDENTIALS, 'r') as f:
-            credentials['email'] = f.readline()[:-1]  #readline return '\n' character in all but the last line in the file
+            credentials['email'] = f.readline()[:-1]  # readline return '\n' character in all but the last line in the file
             credentials['password'] = f.readline()
-        
+
         username, domain = credentials['email'].split('@')
         receiver = username + tag + '@' + domain
         email_capabilities = True
-        
-    except:
-        
+
+    except IOError:
         email_capabilities = False
-            
-    
-    #Initializing the module for 3rd process notifications
+
+    # Create map between commands and functions
+    # TODO
+
+
+    # Initializing the module for 3rd process notifications
     notifQueue = Queue.Queue()
     stopNotificationsEvent = threading.Event()
-    notificationsThread = threading.Thread(target = process3rdNotifications, args = (notifQueue, stopNotificationsEvent))
+    notificationsThread = threading.Thread(target=process3rdNotifications, args=(notifQueue, stopNotificationsEvent))
     notificationsThread.start()
-                
-    #TODO Check that a 3rd person cannot send commands. Restrict by user.
-    
+
+    # TODO Check that a 3rd person cannot send commands. Restrict by user.
+
     ''' LOOP '''
     '''------'''
-    
+
     while not flag_close:
         telegram.expect(["> ", pexpect.TIMEOUT, pexpect.EOF])
-        
+
         telegram.expect(['0m', pexpect.TIMEOUT, pexpect.EOF])
-        rec_message = telegram.before[0:-2] #The last characters are non-printable ones (trash)
+        rec_message = telegram.before[0:-2]  # The last characters are non-printable ones (trash)
         rec_message = toAscii(rec_message).lower()
-        
+
         if rec_message.startswith("alfred"):
-        
+
+            """
+            if rec_message in actions:
+                actions[rec_message]()
+            else:
+                alfred_unsupported(rec_message, telegram)
+            """
+
             if rec_message == usr_cmd_pc_off:
-    	
-                try:
-                    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                except socket.error, msg:
-                    usr_resp_error_aux = usr_resp_sock_error % (msg[0], msg[1])
-        
-                if s is None:
-                    sendUserAndConsole(telegram, usr_resp_error_aux)
-                else:
-                    s.sendto(cmd_pc_off, (BESTIA_PARDA_ADDRESS, PORT))
-                    s.close()
-                    sendUserAndConsole(telegram, usr_resp_pc_off)
-                    time.sleep(0.5)
-    			
-       
+                alfred_pc_off(telegram)
+
+
             elif rec_message == usr_cmd_pc_on:
-                os.system(cmd_on)
-                sendUserAndConsole(telegram, usr_resp_pc_on)
-                time.sleep(0.5)
-    
-    
+                alfred_pc_on(telegram)
+
+
             elif rec_message == usr_cmd_pic:
-                sendUserAndConsole(telegram, usr_resp_pic)
-                
-                picture = picam.takePhotoWithDetails(640, 480, 85)
-                picture.save(PATH_2_IMG)                   
-                
-                telegram.sendline(cmd_pic)
-                telegram.expect(['100', pexpect.TIMEOUT, pexpect.EOF], timeout = 1200)
-                telegram.expect(['photo', pexpect.TIMEOUT, pexpect.EOF])
-                telegram.expect(['0m', pexpect.TIMEOUT, pexpect.EOF])
-                
-                
+                alfred_pic(telegram)
+
+
             elif rec_message == usr_cmd_finish:
                 flag_close = True
-            
-            
+
+
             elif rec_message == usr_cmd_help:
-                
-                sendUserAndConsole(telegram, usr_resp_help)
-                
-                for command in usr_cmd_list:
-                    sendUserAndConsole(telegram, command)
-                    
-    
+                alfred_help(telegram)
+
+
             elif rec_message == usr_cmd_ip:
-                sendUserAndConsole(telegram, usr_resp_pic) #it seems wrong, but is for reutilization purposes, its ok
-                public_ip = subprocess.Popen('curl ifconfig.me', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
-                sendUserAndConsole(telegram, usr_resp_ip % public_ip)
-                
-                
-            #This command is just for testing new functionality before being completely integrated 
-            #This time the command just send an email
+                alfred_ip(telegram)
+
+
+            # This command is just for testing new functionality before being completely integrated
+            # This time the command just send an email
             elif rec_message == usr_cmd_test:
-                
-                if email_capabilities == True:
-                    sendUserAndConsole(telegram, usr_resp_bye) #it seems wrong, but is for reutilization purposes, its ok
-    
-                    subject = 'Amo Ricardo, tengo que comunicarle algo'    
-                    msg = 'Mensaje enviado desde Alfred'  
-                    
-                    resp = sendmail(credentials, receiver, subject, msg)
-                    sendUserAndConsole(telegram, 'Respuesta del motor de correo: ')
-                    sendUserAndConsole(telegram, '>>> ' + resp)
-                else:
-                    sendUserAndConsole(telegram, usr_resp_email_error)
-                    
+                alfred_test(credentials, email_capabilities, receiver, telegram)
+
             else:
-                sendUserAndConsole(telegram, usr_resp_unsupported1)
-                sendUserAndConsole(telegram, rec_message)
-                sendUserAndConsole(telegram, usr_resp_unsupported2)
-                time.sleep(0.3)
-                
-        #Let's check if we have any notification to send
+                alfred_unsupported(rec_message, telegram)
+
+        # Let's check if we have any notification to send
         check = True
-        
+
         while check:
             try:
                 notif = notifQueue.get_nowait()
-                
+
                 sendUserAndConsole(telegram, usr_resp_notif)
                 sendUserAndConsole(telegram, '>>> ' + notif)
-                    
+
                 notifQueue.task_done()
-            except:
+            except Queue.Empty:
                 check = False
-            
-                    
-                    
-    
+
     ''' END '''
     '''-----'''
     sendUserAndConsole(telegram, usr_resp_bye)
     telegram.sendline(cmd_finish)
-    stopNotificationsEvent.set()  
-    #The main program automatically waits till all non-daemon threads have finished. Don't need join()
+    stopNotificationsEvent.set()
+    # The main program automatically waits till all non-daemon threads have finished. Don't need join()
 
 
 if __name__ == "__main__":
