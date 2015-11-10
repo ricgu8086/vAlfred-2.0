@@ -151,7 +151,12 @@ def runnable():
     flag_close = False
     rec_message = u""
     email_capabilities = False
-    
+
+    #Normalizing user available commands
+    for cmd in usr_cmd_list:
+        cmd = toAscii(cmd).lower()
+        
+    #Opening the communication channel
     telegram = pexpect.spawn(PATH_2_TELEGRAM + ' -k ' + PATH_2_TG_PARAM)
     sendUserAndConsole(telegram, usr_resp_welcome)
     
@@ -193,7 +198,7 @@ def runnable():
         
         if rec_message.startswith("alfred"):
         
-            if rec_message == toAscii(usr_cmd_pc_off).lower():
+            if rec_message == usr_cmd_pc_off:
     	
                 try:
                     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -209,13 +214,13 @@ def runnable():
                     time.sleep(0.5)
     			
        
-            elif rec_message == toAscii(usr_cmd_pc_on).lower():
+            elif rec_message == usr_cmd_pc_on:
                 os.system(cmd_on)
                 sendUserAndConsole(telegram, usr_resp_pc_on)
                 time.sleep(0.5)
     
     
-            elif rec_message == toAscii(usr_cmd_pic).lower():
+            elif rec_message == usr_cmd_pic:
                 sendUserAndConsole(telegram, usr_resp_pic)
                 
                 picture = picam.takePhotoWithDetails(640, 480, 85)
@@ -227,11 +232,11 @@ def runnable():
                 telegram.expect(['0m', pexpect.TIMEOUT, pexpect.EOF])
                 
                 
-            elif rec_message == toAscii(usr_cmd_finish).lower():
+            elif rec_message == usr_cmd_finish:
                 flag_close = True
             
             
-            elif rec_message == toAscii(usr_cmd_help).lower():
+            elif rec_message == usr_cmd_help:
                 
                 sendUserAndConsole(telegram, usr_resp_help)
                 
@@ -239,7 +244,7 @@ def runnable():
                     sendUserAndConsole(telegram, command)
                     
     
-            elif rec_message == toAscii(usr_cmd_ip).lower():
+            elif rec_message == usr_cmd_ip:
                 sendUserAndConsole(telegram, usr_resp_pic) #it seems wrong, but is for reutilization purposes, its ok
                 public_ip = subprocess.Popen('curl ifconfig.me', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
                 sendUserAndConsole(telegram, usr_resp_ip % public_ip)
@@ -247,7 +252,7 @@ def runnable():
                 
             #This command is just for testing new functionality before being completely integrated 
             #This time the command just send an email
-            elif rec_message == toAscii(usr_cmd_test).lower():
+            elif rec_message == usr_cmd_test:
                 
                 if email_capabilities == True:
                     sendUserAndConsole(telegram, usr_resp_bye) #it seems wrong, but is for reutilization purposes, its ok
