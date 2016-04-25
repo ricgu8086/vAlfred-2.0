@@ -3,6 +3,7 @@
 
 credentials_MIAS.txt
 Private/
+Credentials/
 
 # Language generated files #
 ############################
@@ -14,6 +15,10 @@ Private/
 ########
 
 Logs
+
+# IDE generated #
+#################
+.idea/
 
 # Others #
 ##########
