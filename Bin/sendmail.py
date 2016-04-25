@@ -9,8 +9,29 @@ import smtplib
 
     
 def sendmail(credentials, receiver, subject, message):
-    
-    #Email addresses
+    '''
+    This function abstract the task of sending an email using the SMTP protocol.
+    It works perfect with gmail.
+
+    Parameters
+    ----------
+    credentials : dict
+        This dictionary contains the necessary parameters to log in the sender server, i.e.:
+        email, password and server_address (ip:port).
+    receiver : string
+        The email address that will receive this email.
+    subject: string
+        The subject of the email.
+    message: string
+        The content (text) of the email.
+
+    Returns
+    -------
+    _ : string
+        Returns the result of the operation. If it was possible to send the email or not.
+    '''
+
+    # Email addresses
     fromAddr = credentials['email']
     toAddr = receiver
     
@@ -27,7 +48,7 @@ def sendmail(credentials, receiver, subject, message):
         return "Email sent successfully\n"
         
     except:
-        return  "Failed to send the email\n"
+        return "Failed to send the email\n"
             
     
     
